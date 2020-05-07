@@ -32,6 +32,10 @@ def rand_data():
 def get_labels():
     return torch.randint(0,3, (100,1), dtype=torch.int64)
 
+def get_regression_labels():
+    # 100 random numbers following a normal dist between 0-1
+    return torch.randn((100,1))
+
 def build_dataloader(bs, shfle):
     """
         Builds a PyTorch Dataloader object
@@ -40,5 +44,8 @@ def build_dataloader(bs, shfle):
             bs - (integer) number of examples per batch
             shfle - (bool) to randomly sample train instances from dataset
     """
+    # change get_labels to correct version (classification vs regression)
     dataset = TensorDataset(rand_data(), get_labels())
+    dataset = TensorDataset(rand_data(), get_regression_labels())
+
     return DataLoader(dataset, batch_size=bs, shuffle=shfle, num_workers=0)

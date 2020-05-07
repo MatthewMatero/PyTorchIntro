@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 
 from datahandler import build_dataloader
-from model import my_lstm
+from model import my_lstm, my_lstm_regressor
 
 
 def train(train_data, epochs=5):
@@ -21,7 +21,10 @@ def train(train_data, epochs=5):
             preds = model(data, hidden)
             
             # flatten labels to match with predictions
-            loss = loss_func(preds, labels.view(-1).cuda())
+            #loss = loss_func(preds, labels.view(-1).cuda())
+            
+            # don't need to flatten for MSE
+            loss = loss_func(preds, labels.cuda())
 
             loss.backward()
 
@@ -41,8 +44,8 @@ def test(test_data):
             data = data.transpose(0,1).cuda()
 
             preds = model(data, hidden)
-            loss = loss_func(preds, labels.view(-1).cuda())
-            
+            #loss = loss_func(preds, labels.view(-1).cuda())
+            loss = loss_func(preds, labels.cuda())
             test_loss.append(loss.item())
 
         print(f'Loss for test: {np.mean(test_loss)}')
@@ -54,10 +57,12 @@ if __name__ == '__main__':
     test_data = build_dataloader(5, False)
 
     # instantiate model, optimizer, and loss function
-    model = my_lstm(300, 128)
+    model = my_lstm_regressor(300, 128)
     print(model)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    loss_func = nn.CrossEntropyLoss()
+    
+    #loss_func = nn.CrossEntropyLoss()
+    loss_func = nn.MSELoss()
 
     # move model to GPU if possible
     if torch.cuda.is_available():
